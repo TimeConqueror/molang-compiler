@@ -42,4 +42,9 @@ public record ImmutableMolangObject(MolangObject parent) implements MolangObject
     public String toString() {
         return this.parent.toString();
     }
+
+    @Override
+    public boolean isMutable() {
+        return false;
+    }
 }

@@ -3,7 +3,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 group 'gg.moonflower'
-version '3.0.4'
+version '3.0.4-customized.3'
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
@@ -34,6 +34,15 @@ java {
     withJavadocJar()
 }
 
+def secretProps = null
+if (new File("secret.properties").exists()) {
+    secretProps = new File("secret.properties").withReader {
+        def prop = new Properties()
+        prop.load(it)
+        return (new ConfigSlurper().parse(prop))
+    }
+}
+
 publishing {
     publications {
         myJava(MavenPublication) {
@@ -42,8 +51,15 @@ publishing {
     }
 
     repositories {
-        maven {
-            url "file://" + System.getenv("local_maven")
+        mavenLocal()
+        if (secretProps != null) {
+            maven {
+                url "https://repo.repsy.io/mvn/${secretProps.repsy.user}/${secretProps.repsy.repo_name}"
+                credentials {
+                    username secretProps.repsy.login
+                    password secretProps.repsy.password
+                }
+            }
         }
     }
 }

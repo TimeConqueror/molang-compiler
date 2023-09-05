@@ -5,8 +5,10 @@ import gg.moonflower.molangcompiler.api.exception.MolangRuntimeException;
 import gg.moonflower.molangcompiler.api.object.ImmutableMolangObject;
 import gg.moonflower.molangcompiler.api.object.MolangObject;
 import gg.moonflower.molangcompiler.core.object.MolangVariableStorage;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * The runtime for MoLang to create and access data from.
@@ -22,21 +24,29 @@ public class MolangRuntime implements MolangEnvironment {
     private final List<Float> parameters;
 
     private MolangRuntime(MolangObject query, MolangObject global, MolangObject variable, Map<String, MolangObject> libraries) {
+        this(() -> new HashMap<>(libraries), HashMap::new, query, global, variable);
+    }
+
+    public MolangRuntime(Supplier<Map<String, MolangObject>> objectsMapFactory, Supplier<Map<String, String>> aliasesMapFactory, @Nullable MolangObject query, @Nullable MolangObject global, @Nullable MolangObject variable) {
         this.thisValue = 0.0F;
-        this.objects = new HashMap<>();
-        this.aliases = new HashMap<>();
-        this.objects.putAll(libraries);
-        this.loadLibrary("context", query, "c"); // This is static accesses
-        this.loadLibrary("query", query, "q"); // This is static accesses
-        this.loadLibrary("global", global); // This is parameter access
-        this.loadLibrary("variable", variable, "v"); // This can be accessed by Java code
+        this.objects = objectsMapFactory.get();
+        this.aliases = aliasesMapFactory.get();
+        if (query != null) {
+            this.loadLibrary("context", query, "c"); // This is static accesses
+            this.loadLibrary("query", query, "q"); // This is static accesses
+        }
+        if (global != null) {
+            this.loadLibrary("global", global); // This is parameter access
+        }
+        if (variable != null) {
+            this.loadLibrary("variable", variable, "v"); // This can be accessed by Java code
+        }
         this.parameters = new ArrayList<>(8);
     }
 
     private String sanitize(String name) {
-        name = name.toLowerCase(Locale.ROOT);
         while (this.aliases.containsKey(name)) {
-            name = this.aliases.get(name).toLowerCase(Locale.ROOT);
+            name = this.aliases.get(name);
         }
         return name;
     }
@@ -63,7 +73,7 @@ public class MolangRuntime implements MolangEnvironment {
 
     @Override
     public void loadLibrary(String name, MolangObject object, String... aliases) {
-        this.objects.put(name.toLowerCase(Locale.ROOT), object);
+        this.objects.put(name, object);
         for (String alias : aliases) {
             this.aliases.put(alias, name);
         }
@@ -299,7 +309,6 @@ public class MolangRuntime implements MolangEnvironment {
         public MolangEnvironmentBuilder<MolangRuntime> copy(MolangEnvironment environment) {
             try {
                 for (String name : environment.getObjects()) {
-                    name = name.toLowerCase(Locale.ROOT);
                     MolangObject copy = environment.get(name).getCopy();
 
                     switch (name) {
@@ -334,7 +343,7 @@ public class MolangRuntime implements MolangEnvironment {
                     }
                     this.libraries.put(name, copy);
                 }
-            } catch (MolangException e) {
+            } catch (MolangRuntimeException e) {
                 throw new RuntimeException("Failed to copy environment data", e);
             }
             return this;
@@ -478,7 +487,7 @@ public class MolangRuntime implements MolangEnvironment {
                     }
                     this.runtime.objects.put(name, copy);
                 }
-            } catch (MolangException e) {
+            } catch (MolangRuntimeException e) {
                 throw new RuntimeException("Failed to copy environment data", e);
             }
             return this;

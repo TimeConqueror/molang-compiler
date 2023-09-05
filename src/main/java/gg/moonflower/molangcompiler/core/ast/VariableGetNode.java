@@ -6,6 +6,11 @@ import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.MethodNode;
+import ru.timeconqueror.molang.custom.Aliases;
+import ru.timeconqueror.molang.custom.QueryDomain;
+
+import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Retrieves the value of a variable and puts it onto the stack.
@@ -15,6 +20,17 @@ import org.objectweb.asm.tree.MethodNode;
  * @author Ocelot
  */
 public record VariableGetNode(String object, String name) implements Node {
+    public VariableGetNode {
+        name = name.toLowerCase(Locale.ROOT);
+
+        object = Aliases.resolve(object);
+        if (Objects.equals(object, "query")) {
+            String domain = QueryDomain.getDomain(name);
+            if (domain != null) {
+                object = domain;
+            }
+        }
+    }
 
     @Override
     public String toString() {
@@ -36,4 +52,14 @@ public record VariableGetNode(String object, String name) implements Node {
         int index = environment.loadVariable(method, this.object, this.name);
         method.visitVarInsn(Opcodes.FLOAD, index);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (VariableGetNode) obj;
+        return Objects.equals(this.object, that.object) &&
+                Objects.equals(this.name, that.name);
+    }
+
 }

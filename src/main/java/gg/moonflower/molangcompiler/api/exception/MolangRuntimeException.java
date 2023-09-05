@@ -6,7 +6,7 @@ package gg.moonflower.molangcompiler.api.exception;
  * @author Ocelot
  * @since 3.0.0
  */
-public class MolangRuntimeException extends MolangException {
+public class MolangRuntimeException extends RuntimeException {
 
     public MolangRuntimeException(String message) {
         super(message);

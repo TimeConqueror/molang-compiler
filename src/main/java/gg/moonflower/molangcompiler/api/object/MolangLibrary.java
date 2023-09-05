@@ -20,7 +20,11 @@ public abstract class MolangLibrary implements MolangObject {
     private final Map<String, MolangExpression> values;
 
     public MolangLibrary() {
-        this.values = new HashMap<>();
+        this(new HashMap<>());
+    }
+
+    public MolangLibrary(Map<String, MolangExpression> values) {
+        this.values = values;
         this.populate(this.values::put);
     }
 
