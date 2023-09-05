@@ -15,6 +15,11 @@ import java.util.Collection;
 public record ImmutableMolangEnvironment(MolangEnvironment environment) implements MolangEnvironment {
 
     @Override
+    public void loadLibrary(String name, MolangObject object) {
+        this.environment.loadLibrary(name, object);
+    }
+
+    @Override
     public void loadLibrary(String name, MolangObject object, String... aliases) {
         this.environment.loadLibrary(name, object, aliases);
     }

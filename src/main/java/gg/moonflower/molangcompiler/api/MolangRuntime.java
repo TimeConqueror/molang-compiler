@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 public class MolangRuntime implements MolangEnvironment {
 
     private float thisValue;
-    private final Map<String, MolangObject> objects;
+    protected final Map<String, MolangObject> objects;
     private final Map<String, String> aliases;
     private final List<Float> parameters;
 
@@ -72,8 +72,13 @@ public class MolangRuntime implements MolangEnvironment {
     }
 
     @Override
-    public void loadLibrary(String name, MolangObject object, String... aliases) {
+    public void loadLibrary(String name, MolangObject object) {
         this.objects.put(name, object);
+    }
+
+    @Override
+    public void loadLibrary(String name, MolangObject object, String... aliases) {
+        loadLibrary(name, object);
         for (String alias : aliases) {
             this.aliases.put(alias, name);
         }
@@ -152,7 +157,7 @@ public class MolangRuntime implements MolangEnvironment {
         return new EditBuilder(this, query, global, variable);
     }
 
-    private MolangVariableStorage getStorage(String name) {
+    protected MolangVariableStorage getStorage(String name) {
         MolangObject object = this.objects.get(name);
         if (object == null) {
             throw new IllegalStateException("Missing " + name);

@@ -22,9 +22,7 @@ public interface MolangEnvironment {
      * @param object The object to use under that name
      * @since 2.0.0
      */
-    default void loadLibrary(String name, MolangObject object) {
-        this.loadLibrary(name, object, new String[0]);
-    }
+    void loadLibrary(String name, MolangObject object);
 
     /**
      * Loads a library under the specified name.
@@ -35,6 +33,10 @@ public interface MolangEnvironment {
      * @since 3.0.0
      */
     void loadLibrary(String name, MolangObject object, String... aliases);
+
+    default void unloadLibrary(String name) {
+        throw new UnsupportedOperationException();
+    };
 
     /**
      * Loads an alias for a library under the specified name.
