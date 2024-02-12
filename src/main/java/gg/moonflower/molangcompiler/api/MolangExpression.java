@@ -1,5 +1,6 @@
 package gg.moonflower.molangcompiler.api;
 
+import gg.moonflower.molangcompiler.api.bridge.MolangJavaFunction;
 import gg.moonflower.molangcompiler.api.bridge.MolangVariable;
 import gg.moonflower.molangcompiler.api.exception.MolangRuntimeException;
 import gg.moonflower.molangcompiler.core.node.*;
@@ -30,6 +31,17 @@ public interface MolangExpression {
     float get(MolangEnvironment environment) throws MolangRuntimeException;
 
     /**
+     * Resolves the constant float value of this expression if {@link #isConstant()} returns <code>true</code>.
+     *
+     * @return The constant value backing this expression
+     * @throws UnsupportedOperationException If this expression is not considered constant and cannot be resolved without an environment
+     * @since 3.1.0
+     */
+    default float getConstant() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("Expression is not constant");
+    }
+
+    /**
      * Resolves the float value of this expression.
      *
      * @param environment The environment to execute in
@@ -38,6 +50,7 @@ public interface MolangExpression {
      * @deprecated Use {@link MolangEnvironment#resolve(MolangExpression)}
      */
     @Deprecated
+    @ApiStatus.ScheduledForRemoval(inVersion = "4.0.0")
     default float resolve(MolangEnvironment environment) throws MolangRuntimeException {
         return environment.resolve(this);
     }
@@ -50,8 +63,19 @@ public interface MolangExpression {
      * @deprecated Use {@link MolangEnvironment#safeResolve(MolangExpression)}
      */
     @Deprecated
+    @ApiStatus.ScheduledForRemoval(inVersion = "4.0.0")
     default float safeResolve(MolangEnvironment environment) {
         return environment.safeResolve(this);
+    }
+
+    /**
+     * If this node is constant, {@link #getConstant()} can be safely called
+     *
+     * @return Whether this expression is considered constant and can be turned into a float primitive
+     * @since 3.1.0
+     */
+    default boolean isConstant() {
+        return false;
     }
 
     /**
@@ -102,6 +126,29 @@ public interface MolangExpression {
      */
     static MolangExpression lazy(Supplier<Float> value) {
         return new MolangLazyNode(value);
+    }
+
+    /**
+     * Creates a {@link MolangExpression} that calls the specified java code. It will only take the specified number of parameters.
+     *
+     * @param params   The number of parameters in the function. This must be at least 0
+     * @param consumer The implementation of the MoLang call
+     * @return A new expression that calls the java function
+     * @since 3.1.0
+     */
+    static MolangExpression function(int params, MolangJavaFunction consumer) {
+        return new MolangFunctionNode(params, consumer);
+    }
+
+    /**
+     * Creates a {@link MolangExpression} that calls the specified java code. It will take any number of parameters.
+     *
+     * @param consumer The implementation of the MoLang call
+     * @return A new expression that calls the java function
+     * @since 3.1.0
+     */
+    static MolangExpression function(MolangJavaFunction consumer) {
+        return new MolangFunctionNode(-1, consumer);
     }
 
     /**

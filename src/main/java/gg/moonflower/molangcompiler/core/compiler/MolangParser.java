@@ -81,7 +81,7 @@ public final class MolangParser {
                 if (value instanceof OptionalValueNode setNode) {
                     value = setNode.withReturnValue();
                 }
-                yield scope ? value : new ReturnNode(value);
+                yield new ReturnNode(value);
             }
             case LOOP -> {
                 reader.skip();
@@ -98,6 +98,34 @@ public final class MolangParser {
 
                 // Ignore the top level scope since the loop is already a "scope"
                 yield new LoopNode(iterations, body instanceof ScopeNode scopeNode ? scopeNode.node() : body);
+            }
+            case CONTINUE -> {
+                reader.skip();
+                yield new ContinueNode();
+            }
+            case BREAK -> {
+                reader.skip();
+                yield new BreakNode();
+            }
+            case IF -> {
+                reader.skip();
+                expect(reader, MolangLexer.TokenType.LEFT_PARENTHESIS);
+                reader.skip();
+
+                // if(condition)
+                Node condition = parseExpression(reader);
+
+                expect(reader, MolangLexer.TokenType.RIGHT_PARENTHESIS);
+                reader.skip();
+
+                Node branch = parseExpression(reader);
+                if (reader.canRead(2) && reader.peek().type().isTerminating() && reader.peekAfter(1).type() == MolangLexer.TokenType.ELSE) {
+                    reader.skip(2);
+                    yield new TernaryOperationNode(condition, branch, parseExpression(reader));
+                }
+
+                // value ? left
+                yield new BinaryConditionalNode(condition, branch);
             }
             case THIS -> {
                 reader.skip();

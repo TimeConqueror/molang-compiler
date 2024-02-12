@@ -2,6 +2,7 @@ package gg.moonflower.molangcompiler.core.ast;
 
 import gg.moonflower.molangcompiler.api.exception.MolangException;
 import gg.moonflower.molangcompiler.core.compiler.MolangBytecodeEnvironment;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -19,6 +20,7 @@ import java.util.Objects;
  * @param name   The name of the variable
  * @author Ocelot
  */
+@ApiStatus.Internal
 public record VariableGetNode(String object, String name) implements Node {
     public VariableGetNode {
         name = name.toLowerCase(Locale.ROOT);
