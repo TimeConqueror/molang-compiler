@@ -10,6 +10,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+import ru.timeconqueror.molang.CompilerUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,6 +32,9 @@ public class BytecodeCompiler extends ClassLoader {
     public static final int VARIABLE_START = 2;
 
     private static final Pattern DASH = Pattern.compile("-");
+
+    //here to skip compiler optimization for future library shading
+    private static final String molangEnvDescriptor = CompilerUtils.compilerOptimizationHack("(L", "gg/moonflower/molangcompiler/api/MolangEnvironment", ";)F");
 
     private final ThreadLocal<MolangBytecodeEnvironment> environment;
     private final boolean writeClasses;
@@ -72,7 +76,7 @@ public class BytecodeCompiler extends ClassLoader {
             MethodNode method = new MethodNode();
             method.access = Opcodes.ACC_PUBLIC;
             method.name = "get";
-            method.desc = "(Lgg/moonflower/molangcompiler/api/MolangEnvironment;)F";
+            method.desc = molangEnvDescriptor;
             method.exceptions = List.of("gg/moonflower/molangcompiler/api/exception/MolangRuntimeException");
             node.writeBytecode(method, environment, null, null);
             classNode.methods.add(method);

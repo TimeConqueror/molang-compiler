@@ -4,6 +4,7 @@ import gg.moonflower.molangcompiler.api.exception.MolangSyntaxException;
 import org.jetbrains.annotations.ApiStatus;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.MethodNode;
+import ru.timeconqueror.molang.CompilerUtils;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -57,7 +58,7 @@ public record MolangBytecodeEnvironment(Map<String, Integer> variables,
                 Opcodes.INVOKEINTERFACE,
                 "gg/moonflower/molangcompiler/api/object/MolangObject",
                 "get",
-                "(Ljava/lang/String;)Lgg/moonflower/molangcompiler/api/MolangExpression;",
+                CompilerUtils.compilerOptimizationHack("(Ljava/lang/String;)L", "gg/moonflower/molangcompiler/api/MolangExpression", ";"),
                 true
         );
 
@@ -67,7 +68,7 @@ public record MolangBytecodeEnvironment(Map<String, Integer> variables,
                 Opcodes.INVOKEINTERFACE,
                 "gg/moonflower/molangcompiler/api/MolangExpression",
                 "resolve",
-                "(Lgg/moonflower/molangcompiler/api/MolangEnvironment;)F",
+                CompilerUtils.compilerOptimizationHack("(L", "gg/moonflower/molangcompiler/api/MolangEnvironment", ";)F"),
                 true
         );
 
@@ -115,7 +116,7 @@ public record MolangBytecodeEnvironment(Map<String, Integer> variables,
                 Opcodes.INVOKEINTERFACE,
                 "gg/moonflower/molangcompiler/api/MolangEnvironment",
                 "get",
-                "(Ljava/lang/String;)Lgg/moonflower/molangcompiler/api/object/MolangObject;",
+                CompilerUtils.compilerOptimizationHack("(Ljava/lang/String;)L", "gg/moonflower/molangcompiler/api/object/MolangObject", ";"),
                 true);
         method.visitVarInsn(Opcodes.ASTORE, index);
 
@@ -199,7 +200,7 @@ public record MolangBytecodeEnvironment(Map<String, Integer> variables,
                     Opcodes.INVOKESTATIC,
                     "gg/moonflower/molangcompiler/core/MolangUtil",
                     "setValue",
-                    "(Lgg/moonflower/molangcompiler/api/object/MolangObject;Ljava/lang/String;F)V",
+                    CompilerUtils.compilerOptimizationHack("(L", "gg/moonflower/molangcompiler/api/object/MolangObject", ";Ljava/lang/String;F)V"),
                     false
             );
         }
